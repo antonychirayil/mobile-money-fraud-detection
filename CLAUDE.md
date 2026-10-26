@@ -61,6 +61,8 @@ the final report (.docx or PowerPoint), and optionally a Power BI / Tableau dash
 - Python 3.12. Create the venv with `py -3.12 -m venv .venv`; activate with .venv\Scripts\activate.
 - Install with: pip install -r requirements-dev.txt
 - Set random_state=42 everywhere.
+- Git commits and PR descriptions: NO "Co-Authored-By: Claude" trailer or other AI attribution
+  lines. The user is the sole author on GitHub.
 - The main submission notebook is notebooks/fraud_detection.ipynb. It must run top to bottom
   (Restart and Run All) before any commit.
 - The notebook is the main submission. All EDA, preprocessing, training, evaluation, financial
