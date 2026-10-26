@@ -6,7 +6,7 @@ Update at the end of every session. Newest entry on top of the Log section.
 - [x] Step 1  Setup: venv, git + GitHub repo, requirements installed, notebook created
 - [x] Step 2  EDA with charts and insight captions
 - [x] Step 3  Feature engineering and encoding
-- [ ] Step 4  Modelling: baseline, then tree/boosting models, CV, tuning, imbalance handling
+- [x] Step 4  Modelling: baseline, then tree/boosting models, CV, tuning, imbalance handling
 - [ ] Step 5  Evaluation: precision, recall, F1, ROC-AUC, PR-AUC, confusion matrix, curves, calibration
 - [ ] Step 6  Financial impact: cost-optimal threshold, with-model vs no-model, sensitivity table
 - [ ] Step 7  Explainability with SHAP
@@ -35,6 +35,26 @@ Update at the end of every session. Newest entry on top of the Log section.
 - 2026-10-27 (Step 3): whole-balance drain as a yes/no flag (drains_whole_balance), not a ratio;
   no "origin emptied" flag. One-hot `type` with handle_unknown="ignore". No scaling in the shared
   preprocessor: scaling is added per model in Step 4 (LR needs it, trees don't).
+- 2026-10-27 (Step 4 setup): stratified 80/20 train/test split; stratified 5-fold CV on the
+  training set only; imbalance = class weights as main approach + one SMOTE / weights / none
+  comparison on the baseline; PR-AUC (average precision) is the CV selection metric.
+- 2026-10-27 (4.3 result): with balance features none/weights/SMOTE all PR-AUC ~0.994; without:
+  SMOTE 0.930, weights 0.915, none 0.904 (gap within fold std). Decision A: class weights for all
+  models (scale_pos_weight for XGBoost).
+- 2026-10-27 (5.1): tree ensembles keep PR-AUC ~0.994 even without the 4 engineered features
+  (they rebuild them from raw balances); type + amount only drops the best model to ~0.66.
+  Decision: compare every model on 3 feature sets (all / no engineered / type + amount only;
+  the third is notebook-only experiment code). Gradient Boosting = HistGradientBoostingClassifier
+  (classic GradientBoostingClassifier has no class_weight).
+- 2026-10-27 (5.2): tuned ALL six models (user choice), 30 Optuna trials each (TPE, seed 42),
+  PR-AUC on 5-fold CV, all features; logged to MLflow (mlflow.db in project root, experiment
+  "fraud-detection-tuning", 186 runs). Tuned CV PR-AUC: RF 0.9964, XGB 0.9961, LGBM 0.9960,
+  HGB 0.9953, LogReg 0.9943 (no gain), DT 0.9926 (0.974 -> 0.993, overfitting removed).
+  Ensemble gains (0.001-0.002) are within fold std. Full notebook run now takes ~8.5 min.
+- 2026-10-27 (5.3): FINAL MODEL = tuned LightGBM (option A): tied on CV, best on type + amount
+  only (0.662), fastest ensemble, good SHAP support, small file. Only this model touches the test set.
+- Notebook editing: the Read/NotebookEdit tools can no longer open the notebook (too large);
+  cells are inserted/edited with nbformat helper scripts instead.
 - Git: no AI attribution lines in commits (CLAUDE.md rule + .claude/settings.local.json).
   Step 1/2 commits were rewritten and force-pushed on 2026-10-27; GitHub's Contributors box may
   still show "claude" until its cache refreshes.
@@ -51,14 +71,20 @@ Update at the end of every session. Newest entry on top of the Log section.
 - Start applying for jobs in week 1; do not wait for the project to finish.
 
 ## Next action
-Start Step 4 (modelling): "Read CLAUDE.md and PROGRESS.md, then start Step 4."
+Start Step 5 (evaluation, notebook Section 6): "Read CLAUDE.md and PROGRESS.md, then start Step 5."
 Activate the venv first: .venv\Scripts\activate
-Carry into Step 4: stratified train/test split FIRST; build models with build_preprocessor()
-(notebook 3.2) + per-model scaling; drains_whole_balance alone has single-feature AUC 0.986, so
-expect near-perfect scores and run every model with and without the balance features
-(include_balance_features=False). Decisions to make there: test size, CV folds, imbalance handling.
+Carry into Step 5: fit `final_pipeline` (5.3) on X_train, score ONCE on X_test: precision, recall,
+F1, ROC-AUC, PR-AUC, confusion matrix, ROC + PR curves, calibration. Accuracy reported, never the
+headline. Optional realism check: steps 1-7 subset (0.77% fraud). Threshold stays 0.5 here;
+cost-based threshold is Step 6 (Section 7).
 
 ## Log
+- 2026-10-27: Step 4 done (notebook 4.1-4.3, 5.1-5.3). Stratified 80/20 split (train 8,913 /
+  914 fraud; test 2,229 / 228). LogReg baseline PR-AUC 0.994 (0.915 without engineered features).
+  Imbalance: weights chosen. 6 models x 3 feature sets: ensembles ~0.995 with or without engineered
+  features, ~0.51-0.66 with type + amount only -> balance columns drive the scores. Tuned all six
+  (MLflow, 186 runs). Final model: tuned LightGBM. Figures 09, 10 saved. .gitignore: mlflow.db,
+  mlartifacts/, docs/INTERVIEW_NOTES.md (private notes).
 - 2026-10-27: Step 3 done. model/features.py (FraudFeatures: keeps type, amount, 4 balances;
   drops step/nameOrig/nameDest; adds error_balance_orig, error_balance_dest, drains_whole_balance,
   dest_zero_before_after). Notebook 3.1-3.3: build_preprocessor() = FraudFeatures + one-hot type
