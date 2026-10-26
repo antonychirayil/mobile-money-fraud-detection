@@ -43,15 +43,16 @@ One insight sentence under every chart.
 ### Step 3: Feature engineering and encoding
 - errorBalanceOrig = newbalanceOrig + amount - oldbalanceOrg
 - errorBalanceDest = oldbalanceDest + amount - newbalanceDest
-- Flags: origin account emptied; destination balance zero; destination is a merchant;
-  amount-to-balance ratio.
-- Time: hour = step % 24, day = step // 24.
+- Flags: origin account emptied; destination balance zero; amount-to-balance ratio.
+  (No "destination is a merchant" flag: EDA 2.6 showed it duplicates type == PAYMENT.)
+- Time: NONE. EDA 2.4 showed legit rows exist only in steps 1-7, so step/hour/day would leak the
+  label through a sampling artefact. `step` is dropped (decision A, 2026-10-27).
 - Encoding: one-hot for type. Drop raw name IDs (every nameOrig is unique, so no signal).
 Put the feature code in model/features.py so training and the API share it.
 
 ### Step 4: Modelling (brief: "evaluate various classifiers")
-- Decide the split: time-based (train on earlier steps, test on later) or stratified split + stratified
-  5-fold CV. Explain the choice.
+- Split: stratified train/test split + stratified 5-fold CV. Time-based split is ruled out (EDA 2.4:
+  later steps contain only fraud).
 - Baseline Logistic Regression first, then Decision Tree, Random Forest, Gradient Boosting,
   XGBoost, LightGBM.
 - Everything inside one Pipeline so scaling and SMOTE are fitted on training folds only.

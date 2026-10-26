@@ -4,7 +4,7 @@ Update at the end of every session. Newest entry on top of the Log section.
 
 ## Status (started 2026-10-26)
 - [x] Step 1  Setup: venv, git + GitHub repo, requirements installed, notebook created
-- [ ] Step 2  EDA with charts and insight captions
+- [x] Step 2  EDA with charts and insight captions
 - [ ] Step 3  Feature engineering and encoding
 - [ ] Step 4  Modelling: baseline, then tree/boosting models, CV, tuning, imbalance handling
 - [ ] Step 5  Evaluation: precision, recall, F1, ROC-AUC, PR-AUC, confusion matrix, curves, calibration
@@ -26,6 +26,12 @@ Update at the end of every session. Newest entry on top of the Log section.
 - All analysis and training code lives in the notebook. Only the custom feature transformer class
   moves to model/features.py (Step 3), so the saved pipeline can be unpickled by the API.
 - data/ stays tracked in git (CSV is under 1 MB and the notebook needs it to run).
+- 2026-10-27 (EDA 2.4): all 10,000 legit rows are in steps 1-7; fraud spans steps 1-95, so steps
+  8-95 are 100% fraud (sampling artefact). Decision A: drop `step`, create NO hour/day features.
+  A time-based split is therefore impossible; Step 4 uses a stratified random split.
+  Steps 1-7 (0.77% fraud, 78 cases) can serve as a realism check in Step 5.
+- 2026-10-27 (EDA 2.6): merchants (nameDest starting with M) receive only PAYMENTs, so an
+  "is merchant" flag duplicates `type`. Decision: leave the flag out.
 - Not yet decided (decide in the step where it comes up): time-based split vs stratified split;
   cost assumptions for false positives; final model choice.
 
@@ -39,10 +45,21 @@ Update at the end of every session. Newest entry on top of the Log section.
 - Start applying for jobs in week 1; do not wait for the project to finish.
 
 ## Next action
-Start Step 2 (EDA): "Read CLAUDE.md and PROGRESS.md, then start Step 2."
+Start Step 3 (feature engineering): "Read CLAUDE.md and PROGRESS.md, then start Step 3."
 Activate the venv first: .venv\Scripts\activate
+Carry into Step 3 from the EDA: no step/hour/day features; no "is merchant" flag; build the
+balance-error features (they capture "amount equals whole balance", the strongest signal, which
+correlation cannot show); expect near-perfect scores and plan the with/without-balance comparison.
 
 ## Log
+- 2026-10-27: Step 2 (EDA) done, notebook Section 2.1-2.7, 7 figures in reports/figures/.
+  Findings: 10.25% fraud (accuracy misleading); fraud only in TRANSFER (38.5%) and CASH_OUT
+  (30.9%); within those, fraud median amount ~2x legit (353K vs 167K), every amount above 3.78M is
+  fraud, 14 fraud rows at exactly 10M (simulator cap); legit rows exist only in steps 1-7 (steps
+  8-95 are 100% fraud -> drop step); 97.1% of fraud moves the whole origin balance vs 0.0% of legit;
+  legit balances often don't add up (60% start at 0) = simulator quirk; 96% of fraud TRANSFERs go
+  to a zero-balance destination; merchants receive only PAYMENTs (flag redundant); Spearman used
+  for correlations (Pearson distorted by huge values: 0.93 vs 0.34).
 - 2026-10-26: Claude Code session, Step 1 done. CLAUDE.md updated (Python 3.12; code-placement
   rule). Created .venv on Python 3.12.10 and installed requirements-dev.txt (first attempt stalled
   on a network drop; re-ran with --timeout 60 --retries 10). Created notebooks/fraud_detection.ipynb:
