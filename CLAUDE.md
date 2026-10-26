@@ -58,13 +58,16 @@ the final report (.docx or PowerPoint), and optionally a Power BI / Tableau dash
 7. Update PROGRESS.md at the end of every session: what was done, decisions, what is next.
 
 ## Technical rules
-- Python 3.11+. Windows user: virtualenv activates with .venv\Scripts\activate.
+- Python 3.12. Create the venv with `py -3.12 -m venv .venv`; activate with .venv\Scripts\activate.
 - Install with: pip install -r requirements-dev.txt
 - Set random_state=42 everywhere.
 - The main submission notebook is notebooks/fraud_detection.ipynb. It must run top to bottom
   (Restart and Run All) before any commit.
-- Reusable code (feature engineering, cost function) goes in model/ so the notebook and the API
-  use the SAME code.
+- The notebook is the main submission. All EDA, preprocessing, training, evaluation, financial
+  analysis and SHAP live in notebooks/fraud_detection.ipynb as readable cells that run top to
+  bottom. The ONLY code that moves out is the custom feature transformer class, which goes in
+  model/features.py (created in Step 3) and is imported into the notebook, so the saved pipeline
+  can be unpickled by the API later.
 - The saved artifact (model/fraud_model.joblib) must be one full sklearn Pipeline
   (feature engineering + encoding + classifier) that takes RAW transaction columns. The API then
   stays simple and cannot drift from training. Fit on a pandas DataFrame so column names are kept.
@@ -91,7 +94,7 @@ Out of scope: deep learning, Kafka, cloud deployment.
 ## Repo layout
 data/        raw data + description (never edit the raw CSV)
 notebooks/   fraud_detection.ipynb (main submission notebook)
-model/       features.py, cost analysis helpers, train script, fraud_model.joblib
+model/       features.py (custom feature transformer only), fraud_model.joblib
 api/         FastAPI service (/predict returns probability, decision, top reasons)
 app/         Streamlit demo UI
 reports/     report draft (.docx/.pptx) and figures/
