@@ -5,7 +5,7 @@ Update at the end of every session. Newest entry on top of the Log section.
 ## Status (started 2026-10-26)
 - [x] Step 1  Setup: venv, git + GitHub repo, requirements installed, notebook created
 - [x] Step 2  EDA with charts and insight captions
-- [ ] Step 3  Feature engineering and encoding
+- [x] Step 3  Feature engineering and encoding
 - [ ] Step 4  Modelling: baseline, then tree/boosting models, CV, tuning, imbalance handling
 - [ ] Step 5  Evaluation: precision, recall, F1, ROC-AUC, PR-AUC, confusion matrix, curves, calibration
 - [ ] Step 6  Financial impact: cost-optimal threshold, with-model vs no-model, sensitivity table
@@ -32,6 +32,12 @@ Update at the end of every session. Newest entry on top of the Log section.
   Steps 1-7 (0.77% fraud, 78 cases) can serve as a realism check in Step 5.
 - 2026-10-27 (EDA 2.6): merchants (nameDest starting with M) receive only PAYMENTs, so an
   "is merchant" flag duplicates `type`. Decision: leave the flag out.
+- 2026-10-27 (Step 3): whole-balance drain as a yes/no flag (drains_whole_balance), not a ratio;
+  no "origin emptied" flag. One-hot `type` with handle_unknown="ignore". No scaling in the shared
+  preprocessor: scaling is added per model in Step 4 (LR needs it, trees don't).
+- Git: no AI attribution lines in commits (CLAUDE.md rule + .claude/settings.local.json).
+  Step 1/2 commits were rewritten and force-pushed on 2026-10-27; GitHub's Contributors box may
+  still show "claude" until its cache refreshes.
 - Not yet decided (decide in the step where it comes up): time-based split vs stratified split;
   cost assumptions for false positives; final model choice.
 
@@ -45,13 +51,20 @@ Update at the end of every session. Newest entry on top of the Log section.
 - Start applying for jobs in week 1; do not wait for the project to finish.
 
 ## Next action
-Start Step 3 (feature engineering): "Read CLAUDE.md and PROGRESS.md, then start Step 3."
+Start Step 4 (modelling): "Read CLAUDE.md and PROGRESS.md, then start Step 4."
 Activate the venv first: .venv\Scripts\activate
-Carry into Step 3 from the EDA: no step/hour/day features; no "is merchant" flag; build the
-balance-error features (they capture "amount equals whole balance", the strongest signal, which
-correlation cannot show); expect near-perfect scores and plan the with/without-balance comparison.
+Carry into Step 4: stratified train/test split FIRST; build models with build_preprocessor()
+(notebook 3.2) + per-model scaling; drains_whole_balance alone has single-feature AUC 0.986, so
+expect near-perfect scores and run every model with and without the balance features
+(include_balance_features=False). Decisions to make there: test size, CV folds, imbalance handling.
 
 ## Log
+- 2026-10-27: Step 3 done. model/features.py (FraudFeatures: keeps type, amount, 4 balances;
+  drops step/nameOrig/nameDest; adds error_balance_orig, error_balance_dest, drains_whole_balance,
+  dest_zero_before_after). Notebook 3.1-3.3: build_preprocessor() = FraudFeatures + one-hot type
+  -> 14 inputs (10 without balance features). Single-feature AUC (TRANSFER+CASH_OUT):
+  drains 0.986, error_balance_orig 0.944, oldbalanceOrg 0.914 (quirk), amount 0.629. Strongest
+  feature pair: old/new dest balance 0.81, so no duplicates; all kept. Figure 08 saved.
 - 2026-10-27: Step 2 (EDA) done, notebook Section 2.1-2.7, 7 figures in reports/figures/.
   Findings: 10.25% fraud (accuracy misleading); fraud only in TRANSFER (38.5%) and CASH_OUT
   (30.9%); within those, fraud median amount ~2x legit (353K vs 167K), every amount above 3.78M is

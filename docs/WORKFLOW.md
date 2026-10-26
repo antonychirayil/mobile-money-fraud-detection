@@ -43,8 +43,10 @@ One insight sentence under every chart.
 ### Step 3: Feature engineering and encoding
 - errorBalanceOrig = newbalanceOrig + amount - oldbalanceOrg
 - errorBalanceDest = oldbalanceDest + amount - newbalanceDest
-- Flags: origin account emptied; destination balance zero; amount-to-balance ratio.
-  (No "destination is a merchant" flag: EDA 2.6 showed it duplicates type == PAYMENT.)
+- Flags: drains_whole_balance (amount == oldbalanceOrg); dest_zero_before_after.
+  (Built as FraudFeatures in model/features.py, with include_balance_features on/off.)
+  Not used: "destination is a merchant" (duplicates type == PAYMENT, EDA 2.6); "origin emptied"
+  (91% of legit too, EDA 2.5); amount-to-balance ratio (replaced by the drain flag, 2026-10-27).
 - Time: NONE. EDA 2.4 showed legit rows exist only in steps 1-7, so step/hour/day would leak the
   label through a sampling artefact. `step` is dropped (decision A, 2026-10-27).
 - Encoding: one-hot for type. Drop raw name IDs (every nameOrig is unique, so no signal).
