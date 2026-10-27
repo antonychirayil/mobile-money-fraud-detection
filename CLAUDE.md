@@ -1,6 +1,7 @@
 # CLAUDE.md: Fraud Detection portfolio project
 
-Read this file and PROGRESS.md at the start of every session. Full plan: docs/WORKFLOW.md.
+Read this file and PROGRESS.md at the start of every session. Full plan: docs/WORKFLOW.md
+(local only: the docs/ folder is git-ignored and not on GitHub).
 
 ## Who this is for, and the goal
 The user is building this as a portfolio project to get hired as a data analyst / data scientist
@@ -102,4 +103,5 @@ app/         Streamlit demo UI
 reports/     report draft (.docx/.pptx) and figures/
 dashboard/   optional Power BI / Tableau file
 tests/       pytest tests
-docs/        WORKFLOW.md (full plan)
+docs/        local only (git-ignored): WORKFLOW.md (full plan), PROJECT_WALKTHROUGH.md,
+             INTERVIEW_NOTES.md

@@ -12,8 +12,8 @@ mlartifacts/
 .env
 .DS_Store
 
-# Private interview-prep notes (not part of the submission)
-docs/INTERVIEW_NOTES.md
+# Project docs kept private for now (not part of the submission)
+docs/
 
 # Large or regenerated artifacts (keep the final model: model/fraud_model.joblib)
 *.log
