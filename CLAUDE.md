@@ -84,8 +84,16 @@ the final report (.docx or PowerPoint), and optionally a Power BI / Tableau dash
   named variables in one place, with a sensitivity table. Never bury them in code.
 - Charts: label axes, give each a title and a one-sentence insight caption. Save final figures to
   reports/figures/.
-- README.md describes api/main.py, app/streamlit_app.py and model/train_demo.py. These files do not
-  exist yet; create them in Step 8 or update the README to match what actually exists.
+- README.md must describe only files that exist (rewritten in Step 8; there is no train_demo.py:
+  the notebook, Section 9.1, creates the model files).
+- Before any commit, also run the tests: `python -m pytest` (24 tests, all must pass).
+- Runtime dependencies are pinned in api/requirements.txt (used by Docker) to the versions the
+  model was saved with (see model/fraud_model_metadata.json). If a library is upgraded, re-save the
+  model from the notebook and update the pins together.
+- The notebook is too large for the Read/NotebookEdit tools: insert or edit cells with small
+  nbformat scripts, then re-run it with
+  `jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=-1 notebooks/fraud_detection.ipynb`
+  (about 9 minutes, mostly Optuna tuning).
 
 ## Stack (keep to this; do not add heavy extras)
 pandas, NumPy, matplotlib, seaborn, Plotly; scikit-learn (Pipeline, ColumnTransformer);
@@ -97,11 +105,15 @@ Out of scope: deep learning, Kafka, cloud deployment.
 ## Repo layout
 data/        raw data + description (never edit the raw CSV)
 notebooks/   fraud_detection.ipynb (main submission notebook)
-model/       features.py (custom feature transformer only), fraud_model.joblib
-api/         FastAPI service (/predict returns probability, decision, top reasons)
-app/         Streamlit demo UI
-reports/     report draft (.docx/.pptx) and figures/
+model/       features.py (custom feature transformer only), fraud_model.joblib,
+             fraud_model_metadata.json (threshold, inputs, test results, library versions)
+api/         main.py: FastAPI service (/predict returns probability, decision, top reasons;
+             /health); requirements.txt (pinned, used by Docker)
+app/         streamlit_app.py: Streamlit demo UI (calls the API over HTTP)
+reports/     report draft (.docx/.pptx) and figures/ (01-20)
 dashboard/   optional Power BI / Tableau file
-tests/       pytest tests
+tests/       pytest tests (features, API, saved-model regression); config in pytest.ini
 docs/        local only (git-ignored): WORKFLOW.md (full plan), PROJECT_WALKTHROUGH.md,
              INTERVIEW_NOTES.md
+Root files:  Dockerfile + .dockerignore (API image), requirements.txt (API + Streamlit, pinned),
+             requirements-dev.txt (notebook + tests), pytest.ini
