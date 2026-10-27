@@ -10,6 +10,7 @@ mlruns/
 mlflow.db
 mlartifacts/
 .env
+.streamlit/secrets.toml
 .DS_Store
 
 # Project docs kept private for now (not part of the submission)

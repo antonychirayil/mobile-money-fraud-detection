@@ -10,7 +10,7 @@ Update at the end of every session. Newest entry on top of the Log section.
 - [x] Step 5  Evaluation: precision, recall, F1, ROC-AUC, PR-AUC, confusion matrix, curves, calibration
 - [x] Step 6  Financial impact: cost-optimal threshold, with-model vs no-model, sensitivity table
 - [x] Step 7  Explainability with SHAP
-- [ ] Step 8  Production-readiness: saved Pipeline, FastAPI, Streamlit, Dockerfile, tests, monitoring notes
+- [x] Step 8  Production-readiness: saved Pipeline, FastAPI, Streamlit, Dockerfile, tests, monitoring notes
 - [ ] Step 9  Report (.docx or .pptx) + optional Power BI dashboard
 - [ ] Step 10 Package: zip, README, GitHub cleanup, resume bullets
 
@@ -69,6 +69,11 @@ Update at the end of every session. Newest entry on top of the Log section.
     but strictly the rule was not chosen blind. The alternative rule's results are shown in 7.4.
   - 7.3 added a business-rule baseline (flag whole-balance drains) and a perfect-model reference.
   - 8: SHAP TreeExplainer on the test set (log-odds); top_reasons() helper for the API.
+- 2026-10-27 (Step 8 setup, user choices): save the train-set pipeline (the evaluated one) to
+  model/fraud_model.joblib, threshold + metrics in a separate metadata JSON; no train_demo.py
+  (README fixed: the notebook creates the model file); API requires the 6 fields the model uses
+  (type, amount, 4 balances), step/nameOrig/nameDest optional and ignored; Docker = API only.
+  lightgbm must move into requirements.txt (runtime), xgboost no longer needed at runtime.
 - Notebook editing: the Read/NotebookEdit tools can no longer open the notebook (too large);
   cells are inserted/edited with nbformat helper scripts instead.
 - Git: no AI attribution lines in commits (CLAUDE.md rule + .claude/settings.local.json).
@@ -78,30 +83,41 @@ Update at the end of every session. Newest entry on top of the Log section.
   PROJECT_WALKTHROUGH.md (section-by-section record), INTERVIEW_NOTES.md (private prep notes).
 
 ## Open items / reminders
-- README.md and requirements.txt were already in the folder; they were left untouched.
-  README lists api/, app/ and model/train_demo.py that don't exist yet.
-- .gitignore: mlflow.db, mlartifacts/ and docs/ added. Still only suggested (user to decide):
-  .streamlit/secrets.toml (add in Step 8 with the Streamlit app), .vscode/.
+- README.md rewritten in Step 8 to match the real files (no train_demo.py).
+- .gitignore: mlflow.db, mlartifacts/, docs/ and .streamlit/secrets.toml added. Still only
+  suggested (user to decide): .vscode/.
 - Notebook run time ~8.5-9 min (Optuna tuning of all six models). LightGBM tuning slowed to ~17 min
   once when another program (a java process) was busy; capping LightGBM at 4 threads or caching
   the tuning results were offered, not applied.
-- Uncommitted at end of session: .gitignore, CLAUDE.md, docs/WORKFLOW.md untracking, and all of
-  Steps 5-7 (notebook + figures 11-20 + PROGRESS.md).
-- Installed versions are unpinned; pin with pip freeze in Step 10. Note pandas is 3.x
+- Steps 5-7 committed and pushed as b1a9ea6 (2026-10-27). Step 8 not yet committed at the time of
+  writing (see Log).
+- Runtime versions are pinned (api/requirements.txt, requirements.txt); requirements-dev.txt extras
+  (jupyter, optuna, mlflow, xgboost, ...) are still unpinned: pin in Step 10. Note pandas is 3.x
   (text columns show dtype `str`, not `object`).
 - Start applying for jobs in week 1; do not wait for the project to finish.
 
 ## Next action
-First: review the Steps 5-7 defaults above (financial assumptions, threshold rule) and commit.
-Then Step 8 (production-readiness, notebook Section 9): "Read CLAUDE.md and PROGRESS.md, then
-start Step 8." Activate the venv first: .venv\Scripts\activate
-Carry into Step 8: save `final_pipeline` (fitted on X_train) to model/fraud_model.joblib together
-with COST_THRESHOLD (0.00032); reload test; FastAPI /predict returns probability, decision at the
-cost threshold, and top reasons (SHAP, as in top_reasons() in 8.3); Streamlit demo; Dockerfile;
-pytest tests (features, API schema, threshold logic); add .streamlit/secrets.toml to .gitignore;
-README must match the files that exist.
+Step 9 (report + optional Power BI dashboard): "Read CLAUDE.md and PROGRESS.md, then start Step 9."
+Activate the venv first: .venv\Scripts\activate
+Carry into Step 9: 6-8 page report (.docx) or PowerPoint answering the three business questions
+directly (answers drafted in docs/PROJECT_WALKTHROUGH.md, "Answers to the three business
+questions"); reuse reports/figures/; state all caveats (simulated, enriched 10% fraud, balance-column
+dependence, illustrative cost assumptions, threshold-rule caveat). Notebook Section 10
+(Conclusions) is still a header only: fill it in Step 9 or 10. Decide: .docx vs .pptx; Power BI or not.
 
 ## Log
+- 2026-10-27: Step 8 done. Notebook 9.1 saves the train-set pipeline (model/fraud_model.joblib,
+  0.8 MB) + model/fraud_model_metadata.json (threshold, required inputs, test results, versions);
+  reload reproduces test predictions exactly. 9.2 = serving + monitoring/retraining notes.
+  api/main.py (FastAPI: /health, /predict with Pydantic validation -> 422, decide() threshold rule,
+  top 3 SHAP reasons); app/streamlit_app.py (calls the API over HTTP; FRAUD_API_URL env var);
+  tests/ (24 pytest tests: features, API, saved-model regression) all pass; pytest.ini.
+  Requirements: api/requirements.txt pinned (sklearn 1.9.1, lightgbm 4.7.0, ...); requirements.txt
+  = API + streamlit/requests pinned; xgboost moved to requirements-dev.txt. Dockerfile
+  (python:3.12.10-slim + libgomp1, non-root, HEALTHCHECK) + .dockerignore; image fraud-api built
+  (750 MB) and tested: healthy, identical predictions to local. README rewritten to match real files
+  (train_demo.py dropped). .gitignore: .streamlit/secrets.toml. Beeswarm figure now seeded.
+  Known: FastAPI TestClient prints a deprecation warning (httpx -> httpx2); harmless, left visible.
 - 2026-10-27: Steps 5-7 done (notebook 6.1-6.5, 7.1-7.4, 8.1-8.3; figures 11-20).
   Test set (tuned LightGBM, threshold 0.5): PR-AUC 0.994, ROC-AUC 0.996, precision 0.996,
   recall 0.978, F1 0.987, accuracy 0.997; TP 223, FN 5, FP 1, TN 2000. 4 of 5 missed frauds come
