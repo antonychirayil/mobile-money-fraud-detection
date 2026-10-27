@@ -1,7 +1,7 @@
 # Everything needed for the notebook work (EDA, modelling, tuning, tests).
 # requirements.txt = what the API/app needs at runtime. This file adds the rest.
 -r requirements.txt
-lightgbm
+xgboost
 imbalanced-learn
 matplotlib
 seaborn

@@ -1,0 +1,17 @@
+# Keep the build context small: the image only needs api/ and the model files
+.venv/
+.git/
+data/
+notebooks/
+reports/
+docs/
+tests/
+app/
+dashboard/
+mlruns/
+mlartifacts/
+mlflow.db
+**/__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+.claude/
