@@ -16,5 +16,14 @@ mlartifacts/
 # Project docs kept private for now (not part of the submission)
 docs/
 
+# Capstone deck and the BIA template it uses: the template is confidential, so neither goes on GitHub
+Capstone PPT Template.pptx
+reports/*.pptx
+# Lock files Office creates while a document is open
+~$*
+
+# Reference material from other people: never published
+Others/
+
 # Large or regenerated artifacts (keep the final model: model/fraud_model.joblib)
 *.log
