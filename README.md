@@ -7,8 +7,8 @@ tested FastAPI service in Docker with a Streamlit demo.
 The full analysis is in [`notebooks/fraud_detection.ipynb`](notebooks/fraud_detection.ipynb), which
 runs top to bottom in about 9 minutes. All charts are in [`reports/figures/`](reports/figures/).
 
-**Status:** model, analysis, API, Docker and tests complete. Written report and optional dashboard
-in progress.
+**Status:** model, analysis, API, Docker and tests complete. The final report (PowerPoint) is in
+progress.
 
 ## Results (held-out test set: 2,229 transactions, 228 fraud)
 

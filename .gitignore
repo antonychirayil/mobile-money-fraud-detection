@@ -15,6 +15,9 @@ mlartifacts/
 
 # Project docs kept private for now (not part of the submission)
 docs/
+# Private working notes: project instructions and progress log
+CLAUDE.md
+PROGRESS.md
 
 # Capstone deck and the BIA template it uses: the template is confidential, so neither goes on GitHub
 Capstone PPT Template.pptx
